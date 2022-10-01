@@ -25,7 +25,7 @@ SECRET_KEY = "m$f&h^3vbhf5c_s)hmdh($n+=tg*d^n&p8yd-mw#c60#f7af&!"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -77,7 +77,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "twitter",
-        "HOST": "0.0.0.0",
+        "HOST": "192.168.0.24",
         "PORT": "3306",
         "USER": "root",
         "PASSWORD": "123456",
