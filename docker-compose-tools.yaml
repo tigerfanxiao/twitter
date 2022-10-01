@@ -1,0 +1,31 @@
+version: "3"
+services:
+  mysql8:
+    platform: linux/amd64
+    container_name: mysql8
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    restart: always
+    volumes:
+      - /usr/local/mysql/data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - /usr/local/redis/data:/data
+      - ./redis.conf:/etc/redis/redis.conf
+    restart: always
+    command: redis-server /etc/redis/redis.conf
+
+  memcahed:
+    container_name: memcahed
+    image: memcached:latest
+    restart: always
+    ports:
+      - "11211:11211"
