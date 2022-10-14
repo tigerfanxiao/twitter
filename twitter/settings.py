@@ -25,7 +25,8 @@ SECRET_KEY = "m$f&h^3vbhf5c_s)hmdh($n+=tg*d^n&p8yd-mw#c60#f7af&!"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.0.24']
 
 
 # Application definition
@@ -37,21 +38,27 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "rest_framework",
+    "rest_framework",  # 安装完 rest_framework后添加
+
+    "debug_toolbar",
+
 ]
+
+STATIC_URL = "static/"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',  # 翻页配置, 直接 copy
     'PAGE_SIZE': 10
 }
 
@@ -83,7 +90,8 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "twitter",
-        "HOST": "192.168.0.24",
+        # "HOST": "192.168.0.24",
+        "HOST": "100.65.149.218",
         "PORT": "3306",
         "USER": "root",
         "PASSWORD": "123456",
@@ -109,6 +117,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+if DEBUG:
+    import socket  # only if you haven't already imported this
+    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+    INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "172.20.0.1", 'localhost', '192.168.0.24']
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
