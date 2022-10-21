@@ -26,5 +26,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(router.urls)),  # 引用 router, 来定义首页
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),  # restframe文档中, 要求配置
-    path('__debug__/', include('debug_toolbar.urls')),
+    path('__debug__/', include('debug_toolbar.urls')),  # 这是 debug tool bar 用的
 ]

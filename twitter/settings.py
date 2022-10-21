@@ -26,7 +26,7 @@ SECRET_KEY = "m$f&h^3vbhf5c_s)hmdh($n+=tg*d^n&p8yd-mw#c60#f7af&!"
 DEBUG = True
 
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.0.24']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.0.24', '100.65.149.218']
 
 
 # Application definition
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",  # 安装完 rest_framework后添加
 
+    # thrid party
     "debug_toolbar",
 
 ]
@@ -51,14 +52,14 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",  # 这是 debug tool bar
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',  # 翻页配置, 直接 copy
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',  # 翻页配置, 如果有多个元素, 就会带着翻页进行返回
     'PAGE_SIZE': 10
 }
 
@@ -90,8 +91,8 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "twitter",
-        # "HOST": "192.168.0.24",
-        "HOST": "100.65.149.218",
+        "HOST": "192.168.0.24",
+        # "HOST": "100.65.149.218",
         "PORT": "3306",
         "USER": "root",
         "PASSWORD": "123456",
@@ -118,9 +119,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 if DEBUG:
-    import socket  # only if you haven't already imported this
+    import socket  # 从 debug tool bar 中复制, 如果使用 docker 需要这么配置
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "172.20.0.1", 'localhost', '192.168.0.24']
+    INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "172.20.0.1", 'localhost', '192.168.0.24','100.65.149.218']
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
