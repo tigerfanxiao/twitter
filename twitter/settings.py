@@ -43,6 +43,10 @@ INSTALLED_APPS = [
     # thrid party
     "debug_toolbar",
 
+    # local
+    "accounts",
+    "tweets",
+
 ]
 
 STATIC_URL = "static/"
