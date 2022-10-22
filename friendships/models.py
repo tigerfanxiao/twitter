@@ -8,7 +8,7 @@ class Friendship(models.Model):
         to=User,
         on_delete=models.SET_NULL,
         null=True,
-        # 逆向查询的时候的 queryset
+        # 逆向查询的时候的 queryset = user.following_friendship_set
         # 查询到我专注的所有人
         related_name="following_friendship_set"
     )
