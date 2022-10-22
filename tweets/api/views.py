@@ -27,6 +27,7 @@ class TweetViewSet(GenericViewSet):
         if 'user_id' not in request.query_params:
             return Response("Missing user_id", status=400)
         # 返回指定用户所有的 tweet, 并按照 created_at 倒叙排列
+        # 这里需要在 model 中建立联合索引
         tweets = Tweet.objects.filter(
             user_id=request.query_params['user_id']
         ).order_by('-created_at')  # 这里需要建立联合索引, 在 model 中配置

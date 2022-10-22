@@ -4,6 +4,7 @@ from utils.time_helpers import utc_now
 
 
 class Tweet(models.Model):
+    # 这里指定了 user 为 ForeignKey, django 会自己帮你建立索引, 方便你逆向查询
     user = models.ForeignKey(
         to=User,
         on_delete=models.SET_NULL,
@@ -18,6 +19,13 @@ class Tweet(models.Model):
     @property
     def hours_to_now(self):
         return (utc_now() - self.created_at).seconds // 3600
+
+    # 在 class Meta中建立联合索引, 默认排序等
+    # 如果只是给单个字段做索引, 在字段约束中加 db_index=True即可
+    # 注意: 如果是后期添加的索引, 需要重新 migrate 才能生效
+    class Meta:
+        index_together = (('user', 'created_at'),) # 注意: 因为可能有多个联合索引, 所以是 tuple(tuple)
+        ordering = ('user', '-created_at') # 默认的排序值, 不会对数据库有影响, 只影响默认的 queryset
 
     def __str__(self):
         return f"{self.created_at} {self.user}: {self.content}"
