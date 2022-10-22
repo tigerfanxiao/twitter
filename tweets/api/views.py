@@ -60,8 +60,8 @@ class TweetViewSet(GenericViewSet):
         # 注意: 这个实例不能直接给 respose 返回, 需要序列化后才能返回
         tweet = serializer.save()
         # 返回 Response
-        return Response({
-            'success': True,
-            'tweet': TweetSerializer(tweet).data,  # 这里我们用 TweetSerializer对实例进行序列化
-        }, status=201)  # 创建成功, 返回值 201
+        # 这里我们用 TweetSerializer对实例进行序列化
+        # 因为返回不是一个列表, 直接把 serilizer返回就行
+        return Response(TweetSerializer(tweet).data, status=201)
+        # 创建成功, 返回值 201
 
