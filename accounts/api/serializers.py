@@ -57,9 +57,9 @@ class SignupSerializer(serializers.ModelSerializer):
         attrs['email'] = email
         return attrs
 
-    def create(self, validated_data): # 这是在 serializer.save()是调用的
+    def create(self, validated_data):  # 这是在 serializer.save()是调用的
         username = validated_data['username'].lower()
-        email = validated_data['email'].lower() # 这里都要保存为小写
+        email = validated_data['email'].lower()  # 这里都要保存为小写
         password = validated_data['password']
         # 要用create_user方法, 不能直接用 create, 因为 django 在后台对password 做了处理, 变成密文
         user = User.objects.create_user(
@@ -67,4 +67,4 @@ class SignupSerializer(serializers.ModelSerializer):
             email=email,
             password=password
         )
-        return user # create方法必须返回被创建的对象
+        return user  # create方法必须返回被创建的对象
