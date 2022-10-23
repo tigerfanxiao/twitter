@@ -29,7 +29,7 @@ class Friendship(models.Model):
         unique_together = (
             ('from_user_id', 'to_user_id'),
         )  # 不同重复关注
-
+        ordering = ('-created_at', )  # 加在所有的查询后面, 除非你制定了 order_by
     def __str__(self):
         return f'{self.from_user.id} followed {self.to_user.id}'
 
