@@ -9,6 +9,7 @@ class FriendshipService(object):
         # 这种写法会导致 N + 1 Queries 的问题
         # 即，filter 出所有 friendships 耗费了一次 Query
         # 而 for 循环每个 friendship 取 from_user 又耗费了 N 次 Queries
+        # 注意: .from_user和.from_user_id不同, .from_user会反向查询, from_user_id不会, 因为本来就在表中
         # friendships = Friendship.objects.filter(to_user=user)
         # return [friendship.from_user for friendship in friendships]
 
@@ -20,10 +21,10 @@ class FriendshipService(object):
         # ).select_related('from_user')
         # return [friendship.from_user for friendship in friendships]
 
-        # 正确的写法一，自己手动 filter id，使用 IN Query 查询
+        # 正确的写法一，自己手动 filter id，使用 IN Query 查询, 指产生一个 query, 而不是 n 个 round-trip query
         # friendships = Friendship.objects.filter(to_user=user)
         # follower_ids = [friendship.from_user_id for friendship in friendships]
-        # followers = User.objects.filter(id__in=follower_ids)
+        # followers = User.objects.filter(id__in=follower_ids)  # 这是一个 in 语句的 query
 
         # 正确的写法二，使用 prefetch_related，会自动执行成两条语句，用 In Query 查询
         # 实际执行的 SQL 查询和上面是一样的，一共两条 SQL Queries

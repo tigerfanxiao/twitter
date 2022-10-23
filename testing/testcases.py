@@ -1,5 +1,6 @@
 from django.test import TestCase as DjangoTestCase # 把 django 自带的重命名
 from django.contrib.auth.models import User
+from rest_framework.test import APIClient
 from tweets.models import Tweet
 # 很多测试都需要创建用户 create_user, 和 create_tweet, 所以抽象出两个方法
 # 这里覆盖 django 自带的 TestCase是为了减少对已经有的代码进行修改, 是一种常用方法
@@ -7,6 +8,13 @@ from tweets.models import Tweet
 
 class TestCase(DjangoTestCase):
     # 这里默认初始值都是先设置为 None 后, 再赋值. 这样不会让定义时写得太长
+    @property
+    def anonymous_client(self):
+        if hasattr(self, '_anonymous_client'):
+            return self._anonymous_client
+        self._anonymous_client = APIClient()
+        return self._anonymous_client
+
     def create_user(self, username, email=None, password=None):
         if password is None:
             password = 'generic password'

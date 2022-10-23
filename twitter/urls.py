@@ -19,12 +19,15 @@ from rest_framework import routers
 from accounts.api.views import UserViewSet, AccountViewSet
 from tweets.api.views import TweetViewSet
 from friendships.api.views import FriendshipViewSet
+from newsfeeds.api.views import NewsFeedViewSet
 
 router = routers.DefaultRouter()   # 使用 rest_framework的 router 来注册 url
 router.register(r'api/users', UserViewSet)  # 注册了 api/users页面, 使用 UserViewSet 来处理请求
 router.register(r'api/accounts', AccountViewSet, basename='accounts')
 router.register(r'api/tweets', TweetViewSet, basename='tweets')
 router.register(r'api/friendships', FriendshipViewSet, basename='friendships')
+router.register(r'api/newsfeeds', NewsFeedViewSet, basename='newsfeeds')
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
