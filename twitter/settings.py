@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     # local
     "accounts",
     "tweets",
-    "friendships"
+    "friendships",
+    "newsfeeds",
 
 ]
 
