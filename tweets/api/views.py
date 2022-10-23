@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from tweets.models import Tweet
 from tweets.api.serializers import TweetSerializer, TweetSerializerForCreate
-
+from newsfeeds.services import NewsFeedServices
 
 # 一般不用 ModelViewSet, 因为 ModelViewSet 默认你增删查改都可以做, 我们不打算开放这些接口
 # 我们只需要 list 和 create 两个接口
@@ -59,6 +59,8 @@ class TweetViewSet(GenericViewSet):
         # 调用 serializier.save() 把数据保存下来, 并返回创建的实例
         # 注意: 这个实例不能直接给 respose 返回, 需要序列化后才能返回
         tweet = serializer.save()
+        # 这里增加一个 newsfeed的 service, fanout newsfeed to followers
+        NewsFeedServices.fanout_to_followers(tweet)
         # 返回 Response
         # 这里我们用 TweetSerializer对实例进行序列化
         # 因为返回不是一个列表, 直接把 serilizer返回就行
