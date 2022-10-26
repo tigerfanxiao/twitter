@@ -14,6 +14,8 @@ class NewsFeed(models.Model):
         index_together = (('user', 'created_at'), )
         unique_together = (('user', 'tweet'), )
         ordering = ('-created_at', )
+        # 虽然这里默认了使用ordering的排序方法, 还是建议在 viewset 中取 queryset 的时候直接指定 order_by
+        # 这样对看代码的人来说, 更直观. 不需要到深入一层到 model 中才能发现排序的逻辑
 
     def __str__(self):
         return f'{self.created_at} inbox of {self.user}: {self.tweet}'

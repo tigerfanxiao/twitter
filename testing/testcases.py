@@ -1,5 +1,6 @@
-from django.test import TestCase as DjangoTestCase # 把 django 自带的重命名
+from comments.models import Comment
 from django.contrib.auth.models import User
+from django.test import TestCase as DjangoTestCase # 把 django 自带的重命名
 from rest_framework.test import APIClient
 from tweets.models import Tweet
 # 很多测试都需要创建用户 create_user, 和 create_tweet, 所以抽象出两个方法
@@ -33,5 +34,14 @@ class TestCase(DjangoTestCase):
             content = 'default tweet content'
         return Tweet.objects.create(
             user=user,
+            content=content,
+        )
+
+    def create_comment(self, user, tweet, content=None):
+        if content is None:
+            content = 'default comment content'
+        return Comment.objects.create(
+            user=user,
+            tweet=tweet,
             content=content,
         )
