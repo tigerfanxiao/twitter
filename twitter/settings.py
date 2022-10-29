@@ -98,8 +98,8 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "twitter",
-        "HOST": "192.168.0.24",
-        # "HOST": "100.65.149.218",
+        # "HOST": "192.168.0.24",
+        "HOST": "100.65.149.218",
         "PORT": "3306",
         "USER": "root",
         "PASSWORD": "123456",
