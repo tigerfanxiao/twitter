@@ -24,6 +24,13 @@ class CommentSerializerForCreate(serializers.ModelSerializer):
 
         return attrs
 
+    def create(self, validated_data):
+        return Comment.objects.create(
+            user_id=validated_data['user_id'],
+            tweet_id=validated_data['tweet_id'],
+            content=validated_data['content'],
+        )
+
 
 class CommentSerializer(serializers.ModelSerializer):
     user = UserSerializerForComment()
@@ -38,3 +45,14 @@ class CommentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
+
+
+class CommentSerializerForUpdate(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ("content", )
+
+    def update(self, instance, validated_data):
+        instance.content = validated_data['content']
+        instance.save()  # 刷新数据库
+        return instance
