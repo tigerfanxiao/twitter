@@ -1,5 +1,7 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.db import models
+from likes.models import Like
 from utils.time_helpers import utc_now
 
 
@@ -20,6 +22,13 @@ class Tweet(models.Model):
     def hours_to_now(self):
         return (utc_now() - self.created_at).seconds // 3600
 
+    # 通过 tweet.like_set可以反查点赞
+    @property
+    def like_set(self):
+        return Like.objects.filter(
+            content_type=ContentType.objects.get_for_model(Tweet),
+            object_id=self.id,
+        ).order_by('-created_at')
 
 
     # @property
@@ -33,6 +42,7 @@ class Tweet(models.Model):
     class Meta:
         index_together = (('user', 'created_at'),) # 注意: 因为可能有多个联合索引, 所以是 tuple(tuple)
         ordering = ('user', '-created_at') # 默认的排序值, 不会对数据库有影响, 只影响默认的 queryset
+
 
     def __str__(self):
         return f"{self.created_at} {self.user}: {self.content}"
