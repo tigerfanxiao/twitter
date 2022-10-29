@@ -9,6 +9,7 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from utils.decorators import required_params
 
 class CommentsViewSet(viewsets.GenericViewSet):
     """
@@ -28,13 +29,8 @@ class CommentsViewSet(viewsets.GenericViewSet):
             return [IsAuthenticated(), IsObjectOwner()]  # 其中 IsObjectOwner 是自定义的 permissions
         return [AllowAny()]
 
+    @required_params(params=['tweet_id'])
     def list(self, request, *args, **kwargs):
-        if 'tweet_id' not in request.query_params:
-            return Response({
-                'success': False,
-                'message': 'missing tweet_id in request'
-            }, status=status.HTTP_400_BAD_REQUEST)
-
         # 一般的做法
         # 这种做法的问题在于, 如果筛选的条件变多了, 就需要写很多欧代码
         # tweet_id = request.query_params['tweet_id']

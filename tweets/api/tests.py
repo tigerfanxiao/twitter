@@ -5,6 +5,8 @@ from tweets.models import Tweet
 # 注意这里 url 是一样的, 只是方法不一样
 TWEET_LIST_URL = '/api/tweets/'  # 用 get 方法
 TWEET_CREATE_URL = '/api/tweets/'  # 用 post 方法
+TWEET_RETRIEVE_API = '/api/tweets/{}/'
+
 
 class TweetApiTests(TestCase):
 
@@ -32,7 +34,6 @@ class TweetApiTests(TestCase):
             user=self.user2,
         ) for i in range(2)]  # 注意: 两个用户 tweets 的数量最好区分开, 好辨识
 
-
     def test_list_api(self):
         # 不带参数访问
         response = self.anonymous_client.get(TWEET_LIST_URL)  # 使用 get 方法
@@ -55,10 +56,10 @@ class TweetApiTests(TestCase):
         self.assertEqual(response.data['tweets'][0]['id'], self.tweets2[1].id)
         self.assertEqual(response.data['tweets'][1]['id'], self.tweets2[0].id)
 
-
     def test_create_api(self):
         # 匿名创建
-        response = self.anonymous_client.post(TWEET_CREATE_URL, {'content': '1'})
+        response = self.anonymous_client.post(TWEET_CREATE_URL,
+                                              {'content': '1'})
         self.assertEqual(response.status_code, 403)
 
         # 必须带 content
@@ -71,7 +72,8 @@ class TweetApiTests(TestCase):
         # print(response.status_code) 可以打印调试
         self.assertEqual(response.status_code, 400)
         # content 不能太长
-        response = self.user1_client.post(TWEET_CREATE_URL, {'content': '1'*141})
+        response = self.user1_client.post(TWEET_CREATE_URL,
+                                          {'content': '1' * 141})
         self.assertEqual(response.status_code, 400)
         # 正常创建
         tweets_count = Tweet.objects.count()
@@ -84,3 +86,24 @@ class TweetApiTests(TestCase):
         self.assertEqual(response.data['user']['id'], self.user1.id)
         self.assertEqual(Tweet.objects.count(), tweets_count + 1)
         # 检查创建前后数量增加 1
+
+    def test_retrieve(self):
+        # tweet with id= -1 does not exist
+        url = TWEET_RETRIEVE_API.format(-1)
+        response = self.anonymous_client.get(url)
+        # 因为在 retrieve 函数中用了 self.get_object() 如果找不到, 会抛出 404
+        self.assertEqual(response.status_code, 404)
+
+        # 获取某个 tweet 的时候会一起把 Comments 也答应出来
+        tweet = self.create_tweet(self.user1)
+        url = TWEET_RETRIEVE_API.format(tweet.id)
+        response = self.anonymous_client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['comments']), 0)
+
+        self.create_comment(user=self.user2, tweet=tweet, content="holly s**")
+        self.create_comment(self.user1, tweet, 'hmm...')
+        # 确保这个请求不会返回所有的 tweet, 在写测试代码时很常见, 这是一种干扰因子
+        self.create_comment(self.user1, self.create_tweet(self.user2), 'nothing')
+        response = self.anonymous_client.get(url)
+        self.assertEqual(len(response.data['comments']), 2)

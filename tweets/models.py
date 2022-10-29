@@ -20,6 +20,13 @@ class Tweet(models.Model):
     def hours_to_now(self):
         return (utc_now() - self.created_at).seconds // 3600
 
+
+
+    # @property
+    # def comments(self):
+    #     return self.comment_set.all()
+
+
     # 在 class Meta中建立联合索引, 默认排序等
     # 如果只是给单个字段做索引, 在字段约束中加 db_index=True即可
     # 注意: 如果是后期添加的索引, 需要重新 migrate 才能生效

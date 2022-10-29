@@ -1,11 +1,11 @@
-from rest_framework.serializers import ModelSerializer
-from rest_framework.serializers import CharField
+from rest_framework import serializers
 from accounts.api.serializers import UserSerializerForTweet
 from tweets.models import Tweet
+from comments.api.serializers import CommentSerializer
 
 
 # 这个 Serializer 是用来做展示的. 基本上每个 action 都需要创建一个 Serialzier.
-class TweetSerializer(ModelSerializer):
+class TweetSerializer(serializers.ModelSerializer):
     # 如果不写, 则默认返回 user_id, 不是一个 user 对象
     # 如果我对于 UserSerializer返回的字段不满意, 比如不想暴露太多的信息, 可以重新定义一个专门的 Serializer
     # 这里没有定义 id, created_at, content字段是因为这里是展示用, rest_framework会替我们做, 也无需对字段加限制条件做检验
@@ -19,13 +19,25 @@ class TweetSerializer(ModelSerializer):
         # 如果需要 user 对象深层的信息, 就要指定 user 的 serialier
         fields = ('id', 'user', 'created_at', 'content')
 
-    #
+class TweetSerializerWithComments(TweetSerializer):
+    # 这里要获取到 comments
+    # 首次会在 tweet的model 里去找, 接着会到 TweetSerializer 中去找
+    comments = CommentSerializer(source='comment_set', many=True)
+
+    class Meta:
+        model = Tweet
+        fields = ('id', 'user', 'created_at', 'content', 'comments')
+
+    # 也可实现 serializerMethodField 方式来实现
+    # comments = serializers.SerializerMethodField()
+    # def get_comments(self, obj):
+    #     return CommentSerializer(obj.comment_set.all(), many=True).data
 
 
 # 如果有获取用户的输入, 比如创建这个动作, 就需要创建一个新的Serializer, 带有校验功能
-class TweetSerializerForCreate(ModelSerializer):
+class TweetSerializerForCreate(serializers.ModelSerializer):
     # 这里需要对字段做限制条件140字符. 所以要自己定义
-    content = CharField(min_length=6, max_length=140)
+    content = serializers.CharField(min_length=6, max_length=140)
 
     class Meta:
         model = Tweet
