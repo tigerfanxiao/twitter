@@ -22,7 +22,10 @@ def required_params(request_attr='query_params', params=None):
         """
         @wraps(view_func) # wraps 的作用是把传给 view_func中的所有参数拿出来, 传给下面 _wrapped_view函数定义的参数中
         def _wrapped_view(instance, request, *args, **kwargs):
-            data = getattr(request, request_attr)  # 如果是 get 方法, 直接中 request.query_params中获得参数
+            # 如果是 get 方法, 直接从 request.query_params中获得参数
+            # 如果是 post 方法, 从 request.data中获取参数
+            data = getattr(request, request_attr)
+
             missing_params = [
                 param for param in params  # 挑出我指定的必选参数
                 if param not in data   # 如果必选参数, 已经不在 request 的 data 中, 则为缺失的参数

@@ -14,12 +14,19 @@ class UserSerializerForTweet(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username']
 
+
 # 写了一个别名
 class UserSerializerForFriendship(UserSerializerForTweet):
     pass
 
+
 class UserSerializerForComment(UserSerializerForTweet):
     pass
+
+
+class UserSerializerForLike(UserSerializerForTweet):
+    pass
+
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -35,6 +42,7 @@ class LoginSerializer(serializers.Serializer):
         data['username'] = username
         return data
 
+
 class SignupSerializer(serializers.ModelSerializer):
     # ModelSerializer的用处在于, 当我们使用serializer.save()的时候, 会自动创建一个对象.
     # 因为要创建对象所以要引入 Meta class
@@ -47,7 +55,7 @@ class SignupSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'password', 'email')
 
-    def validate(self, attrs): # 这里用来验证post 的参数, 在 serializer.is_valid()时调用
+    def validate(self, attrs):  # 这里用来验证post 的参数, 在 serializer.is_valid()时调用
         username = attrs['username'].lower()
         email = attrs['email'].lower()
         if User.objects.filter(username=username).exists():
