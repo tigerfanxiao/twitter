@@ -3,7 +3,7 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 from testing.testcases import TestCase
 
-COMMENT_CREATE_URL = '/api/comments/'
+COMMENT_URL = '/api/comments/'
 COMMENT_DETAIL_URL = '/api/comments/{}/'
 
 
@@ -20,32 +20,61 @@ class CommentApiTests(TestCase):
         # linghu create tweet
         self.tweet = self.create_tweet(self.linghu)
 
+    def test_list(self):
+        # 必须带 tweet_id
+        response = self.anonymous_client.get(COMMENT_URL)
+        self.assertEqual(response.status_code, 400)
+        # 带了 tweet_id可以访问
+        # 一开始没有评论
+        response = self.anonymous_client.get(COMMENT_URL, {
+            'tweet_id': self.tweet.id,
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['comments']), 0)
+        # 评论按照时间排序
+        self.create_comment(self.linghu, self.tweet, '1')
+        self.create_comment(self.dongxie, self.tweet, '2')
+        self.create_comment(self.dongxie, self.create_tweet(self.dongxie), '3')
+        response = self.anonymous_client.get(COMMENT_URL, {
+            'tweet_id': self.tweet.id
+        })
+        self.assertEqual(len(response.data['comments']), 2)
+        self.assertEqual(response.data['comments'][0]['content'], "1")
+        self.assertEqual(response.data['comments'][1]['content'], "2")
+
+        # 同时提供 user_id和 tweet_id 只有 tweet_id 会在 filger 中生效
+        response = self.anonymous_client.get(COMMENT_URL, {
+            'tweet_id': self.tweet.id,
+            'user_id': self.linghu.id,
+        })
+        self.assertEqual(len(response.data['comments']), 2)
+
     def test_create(self):
         # 匿名不可以创建
-        response = self.anonymous_client.post(COMMENT_CREATE_URL)
+        response = self.anonymous_client.post(COMMENT_URL)
         self.assertEqual(response.status_code, 403)
 
         # 啥参数都没带不行
-        response = self.linghu_client.post(COMMENT_CREATE_URL)
+        response = self.linghu_client.post(COMMENT_URL)
         self.assertEqual(response.status_code, 400)
 
         # 只带 tweet_id不行
         response = self.linghu_client.post(
-            COMMENT_CREATE_URL,
+            COMMENT_URL,
             data={"tweet_id": self.tweet.id},
         )
         self.assertEqual(response.status_code, 400)
 
         # 只带 content 不行
         response = self.linghu_client.post(
-            COMMENT_CREATE_URL,
+            COMMENT_URL,
             data={"content": "ok"}
         )
         self.assertEqual(response.status_code, 400)
 
         # content太长不行
         response = self.linghu_client.post(
-            COMMENT_CREATE_URL,
+            COMMENT_URL,
             data={
                 "tweet_id": self.tweet.id,
                 "content": "1"*141
@@ -56,7 +85,7 @@ class CommentApiTests(TestCase):
 
         # 正常发 comment
         response = self.linghu_client.post(
-            COMMENT_CREATE_URL,
+            COMMENT_URL,
             data={
                 "tweet_id": self.tweet.id,
                 "content": "1",

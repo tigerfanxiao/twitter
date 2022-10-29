@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "m$f&h^3vbhf5c_s)hmdh($n+=tg*d^n&p8yd-mw#c60#f7af&!"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.0.24', '100.65.149.218']
@@ -32,16 +32,18 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.0.24', '100.65.149.218']
 # Application definition
 
 INSTALLED_APPS = [
+    # django default
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "rest_framework",  # 安装完 rest_framework后添加
 
     # thrid party
+    "rest_framework",  # 安装完 rest_framework后添加
     "debug_toolbar",
+    "django_filters",
 
     # local
     "accounts",
@@ -67,7 +69,10 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',  # 翻页配置, 如果有多个元素, 就会带着翻页进行返回
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 10,
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ]
 }
 
 ROOT_URLCONF = "twitter.urls"
@@ -148,3 +153,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = "/static/"
+
+try:
+    from .local_settings import *
+except:
+    pass
