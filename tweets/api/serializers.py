@@ -19,6 +19,7 @@ class TweetSerializer(serializers.ModelSerializer):
         # 如果需要 user 对象深层的信息, 就要指定 user 的 serialier
         fields = ('id', 'user', 'created_at', 'content')
 
+
 class TweetSerializerWithComments(TweetSerializer):
     # 这里要获取到 comments
     # 首次会在 tweet的model 里去找, 接着会到 TweetSerializer 中去找
@@ -42,7 +43,7 @@ class TweetSerializerForCreate(serializers.ModelSerializer):
     class Meta:
         model = Tweet
         # 用户只需要输入内容, 因为用户名是从 request.user 中获取, created_at, id都是自动添加的
-        fields = ('content', )
+        fields = ('content',)
 
     # 重写 create 函数, 在调用.save 方法修改数据库是会用到
     # .save的工作机制是: 如果传入 Serializer 的是一个 instance 就会调用 update 方法, 如果是一个数据就调用 create 方法
