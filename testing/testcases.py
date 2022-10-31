@@ -5,7 +5,7 @@ from django.test import TestCase as DjangoTestCase  # 把 django 自带的重命
 from likes.models import Like
 from rest_framework.test import APIClient
 from tweets.models import Tweet
-
+from newsfeeds.models import NewsFeed
 
 # 很多测试都需要创建用户 create_user, 和 create_tweet, 所以抽象出两个方法
 # 这里覆盖 django 自带的 TestCase是为了减少对已经有的代码进行修改, 是一种常用方法
@@ -66,4 +66,5 @@ class TestCase(DjangoTestCase):
         client.force_authenticate(user)
         return user, client
 
-
+    def create_newsfeed(self, user, tweet):
+        return NewsFeed.objects.create(user=user, tweet=tweet)

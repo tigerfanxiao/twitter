@@ -34,6 +34,7 @@ class Like(models.Model):
             ('content_type', 'object_id', 'created_at'),
         )
 
+
     def __str__(self):
         return '{} - {} likes {} {}'.format(
             self.created_at,
