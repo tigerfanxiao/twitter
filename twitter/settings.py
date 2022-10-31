@@ -95,6 +95,7 @@ REST_FRAMEWORK = {
 }
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 DATABASES = {
     "default": {
