@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     # thrid party
     "rest_framework",  # 安装完 rest_framework后添加
     "django_filters",
+    "notifications",
 
     # local
     "accounts",
@@ -54,6 +55,7 @@ INSTALLED_APPS = [
     "likes",
     "friendships",
     "newsfeeds",
+    "inbox",
 ]
 
 MIDDLEWARE = [
