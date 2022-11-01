@@ -44,7 +44,7 @@ class NotificationViewSet(
         updated_count = self.get_queryset().update(unread=False) # 在 Notification中已经对 recipient 和 unread 进行了索引
         return Response({'marked_count': updated_count}, status=status.HTTP_200_OK)
 
-    @required_params(method='POST', params=['unread'])
+    @required_params(method='PUT', params=['unread'])
     def update(self, request, *args, **kwargs):
         """
         用户可以标记一个 notification 为已读或者未读。标记已读和未读都是对 notification
@@ -59,7 +59,7 @@ class NotificationViewSet(
         mark as read 可以公用一套逻辑。
         """
         serializer = NotificationSerializerForUpdate(
-            instance=self.get_object(),
+            instance=self.get_object(), # update用的 serializer 是必须要传 instance, 才能在 save 是调用 update
             data=request.data,
         )
         if not serializer.is_valid():
@@ -67,7 +67,7 @@ class NotificationViewSet(
                 'message': "Please check input",
                 'errors': serializer.errors,
             }, status=status.HTTP_400_BAD_REQUEST)
-        notification = serializer.save()
+        notification = serializer.save()  # 会调用 serializer 中 update 的方法
         return Response(
             NotificationSerializer(notification).data,
             status=status.HTTP_200_OK,
