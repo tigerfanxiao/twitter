@@ -2,7 +2,8 @@ from rest_framework import serializers
 from accounts.api.serializers import UserSerializerForTweet
 from tweets.models import Tweet
 from comments.api.serializers import CommentSerializer
-
+from likes.services import LikeService
+from likes.api.serializers import LikeSerializer
 
 # 这个 Serializer 是用来做展示的. 基本上每个 action 都需要创建一个 Serialzier.
 class TweetSerializer(serializers.ModelSerializer):
@@ -10,6 +11,9 @@ class TweetSerializer(serializers.ModelSerializer):
     # 如果我对于 UserSerializer返回的字段不满意, 比如不想暴露太多的信息, 可以重新定义一个专门的 Serializer
     # 这里没有定义 id, created_at, content字段是因为这里是展示用, rest_framework会替我们做, 也无需对字段加限制条件做检验
     user = UserSerializerForTweet()
+    comments_count = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()
+    has_liked = serializers.SerializerMethodField()
 
     class Meta:
         # 如果使用 ModelSerializer 就要指定 Meta
@@ -17,17 +21,45 @@ class TweetSerializer(serializers.ModelSerializer):
         model = Tweet
         # 在 Meta 中指定这个 model 的哪些 field 返回
         # 如果需要 user 对象深层的信息, 就要指定 user 的 serialier
-        fields = ('id', 'user', 'created_at', 'content')
+        fields = (
+            'id',
+            'user',
+            'created_at',
+            'content',
+            'comments_count',
+            'likes_count',
+            'has_liked',
+        )
+
+    def get_likes_count(self, obj):
+        return obj.like_set.count()
+
+    def get_comments_count(self, obj):
+        return obj.comment_set.count()
+
+    def get_has_liked(self, obj):
+        return LikeService.has_liked(self.context['request'].user, obj)
 
 
-class TweetSerializerWithComments(TweetSerializer):
+class TweetSerializerForDetail(TweetSerializer):
     # 这里要获取到 comments
     # 首次会在 tweet的model 里去找, 接着会到 TweetSerializer 中去找
     comments = CommentSerializer(source='comment_set', many=True)
+    likes = LikeSerializer(source='like_set', many=True)
 
     class Meta:
         model = Tweet
-        fields = ('id', 'user', 'created_at', 'content', 'comments')
+        fields = (
+            'id',
+            'user',
+            'created_at',
+            'content',
+            'likes',
+            'comments',
+            'likes_count',
+            'comments_count',
+            'has_liked',
+        )
 
     # 也可实现 serializerMethodField 方式来实现
     # comments = serializers.SerializerMethodField()

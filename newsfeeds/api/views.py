@@ -20,7 +20,10 @@ class NewsFeedViewSet(GenericViewSet):
         ).order_by('-created_at')
 
     def list(self, request):  # list 默认是 GET 方法, 不需要特殊定义action
-        serializer = NewsFeedSerializer(self.get_queryset(), many=True)
+        serializer = NewsFeedSerializer(
+            self.get_queryset(),
+            context={'request': request},
+            many=True)
         return Response({
             'newsfeeds': serializer.data,
         }, status=status.HTTP_200_OK)

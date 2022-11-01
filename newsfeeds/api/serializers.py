@@ -5,7 +5,7 @@ from newsfeeds.models import NewsFeed
 
 
 class NewsFeedSerializer(ModelSerializer):
-    tweet = TweetSerializer()
+    tweet = TweetSerializer()  # 如果在NewsFeedSerializer 里面传入 context会向下传递到 TweetSerializer
 
     class Meta:
         model = NewsFeed

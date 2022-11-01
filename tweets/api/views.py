@@ -6,7 +6,7 @@ from tweets.models import Tweet
 from tweets.api.serializers import (
     TweetSerializer,
     TweetSerializerForCreate,
-    TweetSerializerWithComments,
+    TweetSerializerForDetail,
 )
 
 from utils.decorators import required_params
@@ -36,15 +36,21 @@ class TweetViewSet(GenericViewSet):
         tweets = Tweet.objects.filter(
             user_id=request.query_params['user_id']
         ).order_by('-created_at')  # 这里需要建立联合索引, 在 model 中配置
-        serializer = TweetSerializer(tweets,
-                                     many=True)  # 这里传入的是 querySet 指定 many=True, 说明会返回 list of dict
+        serializer = TweetSerializer(
+            tweets,
+            context={'request': request},
+            many=True
+        )  # 这里传入的是 querySet 指定 many=True, 说明会返回 list of dict
         return Response({
             "tweets": serializer.data,
         })  # 一般是 return 一个 dict, 不会直接 return 一个 list
 
     def retrieve(self, request, *args, **kwargs):
-        tweet = self.get_object()  # 注意: 使用self.get_object()时, 必须要先指定 queryset, 因为它会先调用 self.get_queryset方法
-        return Response(TweetSerializerWithComments(tweet).data)
+        serializer = TweetSerializerForDetail(
+            self.get_object(),  # 注意: 使用self.get_object()时, 必须要先指定 queryset, 因为它会先调用 self.get_queryset方法
+            context={'request': request},
+        )
+        return Response(serializer.data)
 
     def create(self, request):
         # 提取用户提交的数据
@@ -73,5 +79,8 @@ class TweetViewSet(GenericViewSet):
         # 返回 Response
         # 这里我们用 TweetSerializer对实例进行序列化
         # 因为返回不是一个列表, 直接把 serilizer返回就行
-        return Response(TweetSerializer(tweet).data, status=201)
+        return Response(TweetSerializer(
+            tweet,
+            context={'request': request},
+        ).data, status=201)
         # 创建成功, 返回值 201

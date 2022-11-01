@@ -4,7 +4,7 @@ from functools import wraps
 
 
 # 最外层的函数相当于一个 decorator 的生成器, 每次获得一个参数后, 就返回一个 decorator
-def required_params(request_attr='query_params', params=None):
+def required_params(method='GET', params=None):
     """
     当我们使用@required_params(params=['some_param'])的时候
     这个required_params 函数需要返回一个 decorator 函数, 这个 decorator 函数
@@ -24,7 +24,10 @@ def required_params(request_attr='query_params', params=None):
         def _wrapped_view(instance, request, *args, **kwargs):
             # 如果是 get 方法, 直接从 request.query_params中获得参数
             # 如果是 post 方法, 从 request.data中获取参数
-            data = getattr(request, request_attr)
+            if method.lower() == 'get':
+                data = request.query_params
+            else:
+                data = request.data
 
             missing_params = [
                 param for param in params  # 挑出我指定的必选参数

@@ -10,6 +10,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from utils.decorators import required_params
+from inbox.services import NotificationService
 
 
 class CommentsViewSet(viewsets.GenericViewSet):
@@ -50,7 +51,11 @@ class CommentsViewSet(viewsets.GenericViewSet):
             .prefetch_related('user')\
             .order_by('created_at')
 
-        serializer = CommentSerializer(comments, many=True)
+        serializer = CommentSerializer(
+            comments,
+            context={'request': request},
+            many=True,
+        )
         return Response({
             'comments': serializer.data,
         }, status=status.HTTP_200_OK)
@@ -70,8 +75,12 @@ class CommentsViewSet(viewsets.GenericViewSet):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         instance = serializer.save()
+        NotificationService.send_comment_notification(instance)  # 评论后发送通知
         return Response(
-            CommentSerializer(instance).data,
+            CommentSerializer(
+                instance,
+                context={'request': request},
+            ).data,
             status=status.HTTP_201_CREATED)
 
 
@@ -91,7 +100,11 @@ class CommentsViewSet(viewsets.GenericViewSet):
                 'message': "Please check input",
             }, status=status.HTTP_400_BAD_REQUEST)
         comment = serializer.save()  # 刷新数据库
-        return Response(CommentSerializer(comment).data, status=status.HTTP_200_OK)
+        serializer = CommentSerializer(
+                comment,
+                context={'request': request},
+            )
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs): # 这里必须要要加*args, 否则无法传递 pk 值
         comment = self.get_object()
