@@ -1,24 +1,20 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from rest_framework.exceptions import ValidationError
+from accounts.models import UserProfile
 
 
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email']
-
-
-class UserSerializerForTweet(serializers.ModelSerializer):
-    class Meta:
-        model = User
         fields = ['id', 'username']
 
 
 class UserSerializerWithProfile(UserSerializer):
+    # 如果我丢给给 Serializer 的 obj 是 User, 那么就会通过 user.profile.nickname来获取nickname
     nickname = serializers.CharField(source='profile.nickname')
-    avatar_url = serializers.SerializerMethodField()
+    avatar_url = serializers.SerializerMethodField()  # method_field对应的方法就是 get_avatar_url
 
     def get_avatar_url(self, obj):
         if obj.profile.avatar:
@@ -29,15 +25,26 @@ class UserSerializerWithProfile(UserSerializer):
         model = User
         fields = ('id', 'username', 'nickname', 'avatar_url')
 
-class UserSerializerForFriendship(UserSerializerForTweet):
+
+class UserProfileSerializerForUpdate(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ('nickname', 'avatar')
+
+class UserSerializerForTweet(UserSerializerWithProfile):
+    class Meta:
+        model = User
+        fields = ['id', 'username']
+
+class UserSerializerForFriendship(UserSerializerWithProfile):
     pass
 
 
-class UserSerializerForComment(UserSerializerForTweet):
+class UserSerializerForComment(UserSerializerWithProfile):
     pass
 
 
-class UserSerializerForLike(UserSerializerForTweet):
+class UserSerializerForLike(UserSerializerWithProfile):
     pass
 
 

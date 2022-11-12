@@ -16,8 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
-from accounts.api.views import UserViewSet
-from accounts.api.views import AccountViewSet
+from accounts.api.views import UserViewSet, AccountViewSet, UserProfileViewSet
 from friendships.api.views import FriendshipViewSet
 from newsfeeds.api.views import NewsFeedViewSet
 from tweets.api.views import TweetViewSet
@@ -35,6 +34,8 @@ router.register(r'api/newsfeeds', NewsFeedViewSet, basename='newsfeeds')
 router.register(r'api/comments', CommentsViewSet, basename='comments')
 router.register(r'api/likes', LikeViewSet, basename='likes')
 router.register(r'api/notifications', NotificationViewSet, basename='notifications')
+router.register(r'api/profiles', UserProfileViewSet, basename='profiles')
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),

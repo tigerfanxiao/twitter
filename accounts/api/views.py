@@ -7,7 +7,11 @@ from accounts.api.serializers import (
     UserSerializer,
     LoginSerializer,
     SignupSerializer,
+    UserSerializerWithProfile,
+    UserProfileSerializerForUpdate,
+
 )
+from accounts.models import UserProfile
 
 from django.contrib.auth import (
     logout as django_logout,
@@ -15,13 +19,15 @@ from django.contrib.auth import (
     authenticate as django_authenticate,
 )
 
+from utils.permissions import IsObjectOwner
+
 class UserViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows users to be viewed or edited.
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAdminUser,] # 通过查看源码发现, 只是验证了is_staff
     queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
+    serializer_class = UserSerializerWithProfile
 
 
 class AccountViewSet(viewsets.ViewSet):
@@ -103,6 +109,10 @@ class AccountViewSet(viewsets.ViewSet):
         }, status=201)
 
 
-
-
-
+class UserProfileViewSet(
+    viewsets.GenericViewSet,
+    viewsets.mixins.UpdateModelMixin,  # UpdateModelMixin中已经实现了 update 方法
+):
+    queryset = UserProfile
+    permission_classes = (permissions.IsAuthenticated, IsObjectOwner,)
+    serializer_class = UserProfileSerializerForUpdate
