@@ -7,7 +7,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True)
     # Django 还有一个 ImageField，但是尽量不要用，会有很多的其他问题，用 FileField 可以起到
     # 同样的效果。因为最后我们都是以文件形式存储起来，使用的是文件的 url 进行访问
-    avatar = models.FileField(null=True)
+    avatar = models.FileField(null=True) # 这个 FileField 属性里Url 属性
     # 当一个 user 被创建之后，会创建一个 user profile 的 object
     # 此时用户还来不及去设置 nickname 等信息，因此设置 null=True
     nickname = models.CharField(null=True, max_length=200)

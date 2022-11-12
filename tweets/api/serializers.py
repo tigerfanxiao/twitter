@@ -1,9 +1,12 @@
-from rest_framework import serializers
 from accounts.api.serializers import UserSerializerForTweet
-from tweets.models import Tweet
 from comments.api.serializers import CommentSerializer
-from likes.services import LikeService
 from likes.api.serializers import LikeSerializer
+from likes.services import LikeService
+from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+from tweets.constants import TWEET_PHOTOS_UPLOAD_LIMIT
+from tweets.models import Tweet
+from tweets.services import TweetService
 
 # 这个 Serializer 是用来做展示的. 基本上每个 action 都需要创建一个 Serialzier.
 class TweetSerializer(serializers.ModelSerializer):
@@ -14,6 +17,7 @@ class TweetSerializer(serializers.ModelSerializer):
     comments_count = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
     has_liked = serializers.SerializerMethodField()
+    photo_urls = serializers.SerializerMethodField()
 
     class Meta:
         # 如果使用 ModelSerializer 就要指定 Meta
@@ -29,6 +33,7 @@ class TweetSerializer(serializers.ModelSerializer):
             'comments_count',
             'likes_count',
             'has_liked',
+            'photo_urls',
         )
 
     def get_likes_count(self, obj):
@@ -40,6 +45,11 @@ class TweetSerializer(serializers.ModelSerializer):
     def get_has_liked(self, obj):
         return LikeService.has_liked(self.context['request'].user, obj)
 
+    def get_photo_urls(self, obj):
+        photo_urls = []
+        for photo in obj.tweetphoto_set.all().order_by('order'):
+            photo_urls.append(photo.file.url)
+        return photo_urls
 
 class TweetSerializerForDetail(TweetSerializer):
     # 这里要获取到 comments
@@ -59,6 +69,7 @@ class TweetSerializerForDetail(TweetSerializer):
             'likes_count',
             'comments_count',
             'has_liked',
+            'photo_urls',
         )
 
     # 也可实现 serializerMethodField 方式来实现
@@ -71,24 +82,42 @@ class TweetSerializerForDetail(TweetSerializer):
 class TweetSerializerForCreate(serializers.ModelSerializer):
     # 这里需要对字段做限制条件140字符. 所以要自己定义
     content = serializers.CharField(min_length=6, max_length=140)
+    files = serializers.ListField(
+        child=serializers.FileField(),
+        allow_empty=True,  # 检测files 的值是不是为空, 比如空列表[]
+        required=False,  # 检查是不是有 files 这个 key
+    )
 
     class Meta:
         model = Tweet
         # 用户只需要输入内容, 因为用户名是从 request.user 中获取, created_at, id都是自动添加的
-        fields = ('content',)
+        fields = ('content', 'files', )
 
     # 重写 create 函数, 在调用.save 方法修改数据库是会用到
     # .save的工作机制是: 如果传入 Serializer 的是一个 instance 就会调用 update 方法, 如果是一个数据就调用 create 方法
     # create 函数原型定义中, 就要获得validated_data, 然后返回一个 Model 的实例
-
+    def validate(self, data):
+        if len(data.get('files', [])) > TWEET_PHOTOS_UPLOAD_LIMIT:
+            raise ValidationError({
+                'message': f'You can upload {TWEET_PHOTOS_UPLOAD_LIMIT} photos '
+                           'at most'  # 注意: 这里上一行用了回车, 下一行会拼接到上一行, 以解决 80 个字符长度的问题
+            })
+        return data
     def create(self, validated_data):
         # 如果我们需要创建一个 tweet, 需要 user, content, created_at
         # 因为 user 在 request 中, 所以我们要从 request 获取到,
-        # 说以在实例化 serializer 时, 我们通过 context 把 request 和用户输入一起传入
-        return Tweet.objects.create(
+        # 所以在实例化 serializer 时, 我们通过 context 把 request 和用户输入一起传入
+        tweet = Tweet.objects.create(
             user=self.context['request'].user,
             content=validated_data['content']
         )
+        # 首先要创建出 tweet, 然后把图片关联到 tweet 上
+        if validated_data.get('files'):
+            TweetService.create_photos_from_files(
+                tweet=tweet,
+                files=validated_data['files'],
+            )
+        return tweet
 
     # 因为有用户数据输入, 就需要重写 validata 方法来校验
     # validate方法默认获取 attrs 参数, 然后将校验后的参数返回
