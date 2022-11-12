@@ -92,7 +92,11 @@ class AccountViewSet(viewsets.ViewSet):
 
         # 2. 创建用户, 用户登录, 返回结果
         user = signup_serializer.save()
+
         django_login(request, user)
+
+
+
         return Response({
             'success': True,
             'user': UserSerializer(user).data,
