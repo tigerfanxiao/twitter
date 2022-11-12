@@ -16,6 +16,19 @@ class UserSerializerForTweet(serializers.ModelSerializer):
         fields = ['id', 'username']
 
 
+class UserSerializerWithProfile(UserSerializer):
+    nickname = serializers.CharField(source='profile.nickname')
+    avatar_url = serializers.SerializerMethodField()
+
+    def get_avatar_url(self, obj):
+        if obj.profile.avatar:
+            return obj.profile.avatar.url
+        return None
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'nickname', 'avatar_url')
+
 class UserSerializerForFriendship(UserSerializerForTweet):
     pass
 
@@ -81,4 +94,7 @@ class SignupSerializer(serializers.ModelSerializer):
             email=email,
             password=password
         )
+
+        # 在用户完成注册后创建 UserProfile
+        user.profile
         return user  # create方法必须返回被创建的对象

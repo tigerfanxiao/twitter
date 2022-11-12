@@ -1,9 +1,12 @@
+from accounts.models import UserProfile
 from testing.testcases import TestCase
-from rest_framework.test import APIClient
 
 
-LOGIN_URL = '/api/accounts/login/'
-LOGOUT_URL = '/api/accounts/logout/'
-SIGNUP_URL = '/api/accounts/signup/'
-LOGIN_STATUS_URL = '/api/accounts/login_status/'
+class UserProfileTests(TestCase):
 
+    def test_profile_property(self):
+        linghu = self.create_user('linghu')
+        self.assertEqual(UserProfile.objects.count(), 0)
+        p = linghu.profile
+        self.assertEqual(isinstance(p, UserProfile), True)
+        self.assertEqual(UserProfile.objects.count(), 1)

@@ -3,6 +3,8 @@ asgiref==3.5.2
 asttokens==2.1.0
 autopep8==2.0.0
 backcall==0.2.0
+boto3==1.26.5
+botocore==1.29.5
 cffi==1.15.1
 cli-helpers==2.3.0
 click==8.1.3
@@ -13,11 +15,13 @@ Django==3.2
 django-filter==22.1
 django-model-utils==4.2.0
 django-notifications-hq==1.6.0
+django-storages==1.13.1
 djangorestframework==3.14.0
 executing==1.2.0
 importlib-resources==5.10.0
 ipython==8.6.0
 jedi==0.18.1
+jmespath==1.0.1
 jsonfield==3.1.0
 Markdown==3.4.1
 matplotlib-inline==0.1.6
@@ -35,7 +39,9 @@ pycparser==2.21
 Pygments==2.13.0
 PyMySQL==1.0.2
 pyperclip==1.8.2
+python-dateutil==2.8.2
 pytz==2022.5
+s3transfer==0.6.0
 six==1.16.0
 sqlglot==9.0.6
 sqlparse==0.4.3
@@ -44,4 +50,5 @@ swapper==1.3.0
 tabulate==0.9.0
 tomli==2.0.1
 traitlets==5.5.0
+urllib3==1.26.12
 wcwidth==0.2.5
