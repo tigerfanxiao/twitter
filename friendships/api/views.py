@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from utils.paginations import FriendshipPagination
+from friendships.api.paginations import FriendshipPagination
 
 from friendships.models import Friendship
 from friendships.api.serializers import (
