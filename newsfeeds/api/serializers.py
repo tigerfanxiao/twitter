@@ -5,7 +5,9 @@ from newsfeeds.models import NewsFeed
 
 
 class NewsFeedSerializer(ModelSerializer):
-    tweet = TweetSerializer()  # 如果在NewsFeedSerializer 里面传入 context会向下传递到 TweetSerializer
+    # 如果这里不加这个, 会默认显示 tweet 的 id
+    # 如果在NewsFeedSerializer 里面传入 context会向下传递到 TweetSerializer
+    tweet = TweetSerializer()
 
     class Meta:
         model = NewsFeed
