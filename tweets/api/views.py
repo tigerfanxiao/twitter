@@ -10,6 +10,7 @@ from tweets.api.serializers import (
 )
 
 from utils.decorators import required_params
+from utils.paginations import EndlessPagination
 
 
 # 一般不用 ModelViewSet, 因为 ModelViewSet 默认你增删查改都可以做, 我们不打算开放这些接口
@@ -18,7 +19,7 @@ class TweetViewSet(GenericViewSet):
     # 指定默认的 queryset, serializers,
     queryset = Tweet.objects.all()  # 这里可以不需要, 因为 list方法已经返回了一个 queryset
     serializer_class = TweetSerializerForCreate
-
+    pagination_class = EndlessPagination
     # 默认的 serializer_class django 会提供一个创建时用的表单
 
     # 权限检测有两种方法
@@ -36,14 +37,17 @@ class TweetViewSet(GenericViewSet):
         tweets = Tweet.objects.filter(
             user_id=request.query_params['user_id']
         ).order_by('-created_at')  # 这里需要建立联合索引, 在 model 中配置
+        tweets = self.paginate_queryset(tweets)
         serializer = TweetSerializer(
             tweets,
             context={'request': request},
             many=True
         )  # 这里传入的是 querySet 指定 many=True, 说明会返回 list of dict
-        return Response({
-            "tweets": serializer.data,
-        })  # 一般是 return 一个 dict, 不会直接 return 一个 list
+        # return Response({
+        #     "tweets": serializer.data,
+        # })  # 一般是 return 一个 dict, 不会直接 return 一个 list
+
+        return self.get_paginated_response(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
         serializer = TweetSerializerForDetail(
