@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-
+from utils.paginations import FriendshipPagination
 
 from friendships.models import Friendship
 from friendships.api.serializers import (
@@ -27,25 +27,38 @@ class FriendshipViewSet(GenericViewSet):
     # create api
     # 这是第二种控制 action 和 permission 的方法
 
+    # 一般来说，不同的 views 所需要的 pagination 规则肯定是不同的，因此一般都需要自定义
+    pagination_class = FriendshipPagination  # 引入 pagination 之后就可以在方法中调动 self.pagination
     # 这里我们写一下自定义的action, followers显示用户的粉丝
     # GET /api/friendships/1/followers/
     @action(methods=['GET'], detail=True, permission_classes=[AllowAny])
     def followers(self, request, pk):  # pk 是从 url 中获取的, 类型为 str
-        friendships = Friendship.objects.filter(to_user=pk) #因为模型中的 class Meta有 ording, 所以这里省略 .order_by('-created_at')
+        friendships = Friendship.objects.filter(to_user_id=pk) #因为模型中的 class Meta有 ording, 所以这里省略 .order_by('-created_at')
         # 需要一个 FollowerSerializer
-        serializer = FollowerSerializer(friendships, many=True)
-        return Response({
-            'followers': serializer.data,
-        }, status=status.HTTP_200_OK)
+
+        # serializer = FollowerSerializer(friendships, many=True)
+        # return Response({
+        #     'followers': serializer.data,
+        # }, status=status.HTTP_200_OK)
+
+        # self.paginator # 可以返回一个实例化对象
+        page = self.paginate_queryset(friendships)
+        serializer = FollowerSerializer(page, many=True,
+                                        context={'request': request})
+        return self.get_paginated_response(serializer.data)
 
     # 显示我关注的人
     @action(methods=['GET'], detail=True, permission_classes=[AllowAny])
     def followings(self, request, pk):
         friendships = Friendship.objects.filter(from_user=pk)  #因为模型中的 class Meta有 ording, 所以这里省略 .order_by('-created_at')
-        serializer = FollowingSerializer(friendships, many=True)
-        return Response({
-            'followings': serializer.data,
-        }, status.HTTP_200_OK)
+        # serializer = FollowingSerializer(friendships, many=True)
+        # return Response({
+        #     'followings': serializer.data,
+        # }, status.HTTP_200_OK)
+        page = self.paginate_queryset(friendships)
+        serializer = FollowingSerializer(page, many=True,
+                                         context={'request': request})
+        return self.get_paginated_response(serializer.data)
 
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
     def follow(self, request, pk):
@@ -75,7 +88,9 @@ class FriendshipViewSet(GenericViewSet):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         instance = serializer.save()
-        return Response(FollowingSerializer(instance).data, status.HTTP_201_CREATED)
+        return Response(
+            FollowingSerializer(instance, context={'request': request}).data,
+            status.HTTP_201_CREATED)
 
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
     def unfollow(self, request, pk):

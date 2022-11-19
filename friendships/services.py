@@ -32,3 +32,11 @@ class FriendshipService(object):
             to_user=user,
         ).prefetch_related('from_user')
         return [friendship.from_user for friendship in friendships]
+
+    # 当我去关注别人的好友列表式, 我可以看到我对他的好友是否关注了, 或者可以取关
+    @classmethod
+    def has_followed(cls, from_user, to_user):
+        return Friendship.objects.filter(
+            from_user=from_user,
+            to_user=to_user,
+        ).exists()

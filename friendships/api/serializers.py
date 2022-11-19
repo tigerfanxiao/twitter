@@ -1,37 +1,53 @@
-from rest_framework.serializers import ModelSerializer
-from rest_framework.serializers import IntegerField
+from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from accounts.api.serializers import UserSerializerForFriendship
-
+from friendships.services import FriendshipService
 from friendships.models import Friendship
 
 
-class FollowerSerializer(ModelSerializer):
+class FollowerSerializer(serializers.ModelSerializer):
     # 需要显示 user 的详细信息
     # 这里的 source 可以从 model 中去取字段, 实际的字段名是 from_user
     user = UserSerializerForFriendship(source='from_user')
+    has_followed = serializers.SerializerMethodField()
 
     class Meta:
         model = Friendship  # 实例化的入参
-        fields = ('user', 'created_at')
+        fields = ('user', 'created_at', 'has_followed')
         # 这里只是key 名, 默认会从Serializer的定义中取找,
         # 如果没有找到, 才会去 model Friendship 的字段中去找
     # 因为只是展示数据, 不需要校验
 
+    def get_has_followed(self, obj):
+        if self.context['request'].user.is_anonymous:
+            return False
 
-class FollowingSerializer(ModelSerializer):
+        # TODO: 这里对每一个好友列表中的人都做了一次查询, 后续需要优化
+        return FriendshipService.has_followed(self.context['request'].user, obj.from_user)
+
+class FollowingSerializer(serializers.ModelSerializer):
     user = UserSerializerForFriendship(source='to_user')
+    created_at = serializers.DateTimeField()
+    has_followed = serializers.SerializerMethodField()
     class Meta:
         model = Friendship
-        fields = ('user', 'created_at')
+        fields = ('user', 'created_at', 'has_followed')
 
+    def get_has_followed(self, obj):
+        if self.context['request'].user.is_anonymous:
+            return False
 
-class FriendshipSerialierForCreate(ModelSerializer):
+        # <TODO> 这个部分会对每个 object 都去执行一次 SQL 查询，速度会很慢，如何优化呢？
+        # 我们将在后序的课程中解决这个问题
+        return FriendshipService.has_followed(self.context['request'].user,
+                                              obj.to_user)
+
+class FriendshipSerialierForCreate(serializers.ModelSerializer):
     # 需要检测 to_user是否存在
     # 不能重复 follow, 已经有了 unique_together约束
     # 不能和自己建立 friendship 关系
-    from_user_id = IntegerField()
-    to_user_id = IntegerField()
+    from_user_id = serializers.IntegerField()
+    to_user_id = serializers.IntegerField()
 
     class Meta:
         model = Friendship

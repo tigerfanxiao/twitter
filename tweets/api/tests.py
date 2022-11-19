@@ -111,6 +111,9 @@ class TweetApiTests(TestCase):
         self.assertEqual(len(response.data['comments']), 2)
 
     def test_create_with_files(self):
+        # 还可以做的测试: 比如上传的 data没有 files, 兼容旧的 api
+        # 还可以做的测试: 从 list api 中看有没有这些图片
+
         # 上传空文件列表
         response = self.user1_client.post(TWEET_CREATE_URL, {
             'content': 'a selfie',
@@ -173,7 +176,3 @@ class TweetApiTests(TestCase):
         })
         self.assertEqual(response.status_code, 400)
         self.assertEqual(TweetPhoto.objects.count(), 3)
-
-    def test_retrieve(self):
-        # tweet with id=-1 does not exist
-        url = TWEET_RETRIEVE_API.format(-1)

@@ -41,7 +41,9 @@ class NotificationViewSet(
 
     @action(methods=['POST'], detail=False, url_path='mark-all-as-read')
     def mark_all_as_read(self, request, *args, **kwargs):
-        updated_count = self.get_queryset().update(unread=False) # 在 Notification中已经对 recipient 和 unread 进行了索引
+        # 应该先 filter 一下再 update
+        # 在 Notification中已经对 recipient 和 unread 进行了索引
+        updated_count = self.get_queryset().filter(unread=True).update(unread=False)
         return Response({'marked_count': updated_count}, status=status.HTTP_200_OK)
 
     @required_params(method='PUT', params=['unread'])
