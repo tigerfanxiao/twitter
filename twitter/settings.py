@@ -179,6 +179,23 @@ AWS_S3_REGION_NAME = 'eu-west-3'
 # - media 里使用户上传的数据文件，而不是代码
 MEDIA_ROOT = 'media/'
 
+# https://docs.djangoproject.com/en/3.1/topics/cache/
+# use `pip install python-memcached`
+# DO NOT pip install memcache or django-memcached
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+        'TIMEOUT': 86400,
+    },
+    'testing': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+        'TIMEOUT': 86400,
+        'KEY_PREFIX': 'testing',  # 因为本质上是用了同一个 memcached 的库, 在 testing 时,加上前前缀 testing 来区分测试数据
+    },
+}
+
 try:
     from .local_settings import *
 except:

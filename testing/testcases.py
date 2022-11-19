@@ -1,6 +1,7 @@
 from comments.models import Comment
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.core.cache import caches
 from django.test import TestCase as DjangoTestCase  # 把 django 自带的重命名
 from likes.models import Like
 from rest_framework.test import APIClient
@@ -12,6 +13,8 @@ from newsfeeds.models import NewsFeed
 
 
 class TestCase(DjangoTestCase):
+    def clear_cache(self):
+        caches['testing'].clear()
     # 这里默认初始值都是先设置为 None 后, 再赋值. 这样不会让定义时写得太长
     @property
     def anonymous_client(self):
