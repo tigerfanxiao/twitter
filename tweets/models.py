@@ -1,10 +1,13 @@
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models.signals import post_save, pre_delete
 from likes.models import Like
 from tweets.constants import TweetPhotoStatus, TWEET_PHOTO_STATUS_CHOICES
+from utils.listeners import invalidate_object_cache
+from utils.memcached_helper import MemcachedHelper
 from utils.time_helpers import utc_now
-from accounts.services import UserService
+
 
 class Tweet(models.Model):
     # 这里指定了 user 为 ForeignKey, django 会自己帮你建立索引, 方便你逆向查询
@@ -34,7 +37,7 @@ class Tweet(models.Model):
 
     @property
     def cached_user(self):
-        return UserService.get_user_through_cache(self.user_id)
+        return MemcachedHelper.get_object_through_cache(User, self.user_id)
 
     # 在 class Meta中建立联合索引, 默认排序等
     # 如果只是给单个字段做索引, 在字段约束中加 db_index=True即可
@@ -86,3 +89,7 @@ class TweetPhoto(models.Model):
 
     def __str__(self):
         return f'{self.tweet_id}: {self.file}'
+
+
+post_save.connect(invalidate_object_cache, sender=Tweet)
+pre_delete.connect(invalidate_object_cache, sender=Tweet)
