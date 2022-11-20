@@ -1,7 +1,7 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 from tweets.models import Tweet
-
+from utils.memcached_helper import MemcachedHelper
 
 class NewsFeed(models.Model):
     # 注意: 这个 user 不是谁发了这个帖子, 而是谁可以看到这个帖子
@@ -16,6 +16,10 @@ class NewsFeed(models.Model):
         ordering = ('-created_at', )
         # 虽然这里默认了使用ordering的排序方法, 还是建议在 viewset 中取 queryset 的时候直接指定 order_by
         # 这样对看代码的人来说, 更直观. 不需要到深入一层到 model 中才能发现排序的逻辑
+
+    @property
+    def cached_tweet(self):
+        return MemcachedHelper.get_object_through_cache(Tweet, self.tweet_id)
 
     def __str__(self):
         return f'{self.created_at} inbox of {self.user}: {self.tweet}'
