@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.auth.models import User
-
+from accounts.services import UserService
 
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -42,3 +42,7 @@ class Like(models.Model):
             self.content_type,
             self.content_object,
         )
+
+    @property
+    def cached_user(self):
+        return UserService.get_user_through_cache(self.user_id)

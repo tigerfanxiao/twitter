@@ -13,6 +13,7 @@ TWEET_RETRIEVE_API = '/api/tweets/{}/'
 class TweetApiTests(TestCase):
 
     def setUp(self):
+        self.clear_cache()
         # 一般测试都要有匿名用户和登录用户
 
         # 登录用户就需要创建用户, 并登录

@@ -31,10 +31,9 @@ class UserProfileSerializerForUpdate(serializers.ModelSerializer):
         model = UserProfile
         fields = ('nickname', 'avatar')
 
+
 class UserSerializerForTweet(UserSerializerWithProfile):
-    class Meta:
-        model = User
-        fields = ['id', 'username']
+    pass
 
 class UserSerializerForFriendship(UserSerializerWithProfile):
     # 这种别名的写法, 方便在后面如果要修改的时候, 只要在这里修改, 不因为修改 UserSerializer影响了所有被继承的类

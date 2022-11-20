@@ -91,7 +91,7 @@ class FriendshipViewSet(GenericViewSet):
         instance = serializer.save()
         # 这种删除缓存的处理办法的缺点在于只能 api 调用时才能触发, 在 admin 里创建时就不会触发.
         # 要解决这个问题, 需要使用 listener 机制
-        FriendshipService.invalidate_following_cache(request.user.id)  # 新增数据, 清缓存
+        # FriendshipService.invalidate_following_cache(request.user.id)  # 新增数据, 清缓存
         return Response(
             FollowingSerializer(instance, context={'request': request}).data,
             status.HTTP_201_CREATED)
@@ -114,7 +114,7 @@ class FriendshipViewSet(GenericViewSet):
             to_user=pk,
         ).delete()
         # 可以返回 204 no content
-        FriendshipService.invalidate_following_cache(request.user.id)
+        # FriendshipService.invalidate_following_cache(request.user.id)
         return Response({'success': True, 'deleted': deleted})
 
     # 只有定义了list 方法, 才能在主页看到 friendship 列出来

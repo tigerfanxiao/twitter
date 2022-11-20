@@ -4,7 +4,7 @@ from django.db import models
 from likes.models import Like
 from tweets.constants import TweetPhotoStatus, TWEET_PHOTO_STATUS_CHOICES
 from utils.time_helpers import utc_now
-
+from accounts.services import UserService
 
 class Tweet(models.Model):
     # 这里指定了 user 为 ForeignKey, django 会自己帮你建立索引, 方便你逆向查询
@@ -31,6 +31,10 @@ class Tweet(models.Model):
             content_type=ContentType.objects.get_for_model(Tweet),
             object_id=self.id,
         ).order_by('-created_at')
+
+    @property
+    def cached_user(self):
+        return UserService.get_user_through_cache(self.user_id)
 
     # 在 class Meta中建立联合索引, 默认排序等
     # 如果只是给单个字段做索引, 在字段约束中加 db_index=True即可
