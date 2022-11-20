@@ -13,7 +13,8 @@ class TweetSerializer(serializers.ModelSerializer):
     # 如果不写, 则默认返回 user_id, 不是一个 user 对象
     # 如果我对于 UserSerializer返回的字段不满意, 比如不想暴露太多的信息, 可以重新定义一个专门的 Serializer
     # 这里没有定义 id, created_at, content字段是因为这里是展示用, rest_framework会替我们做, 也无需对字段加限制条件做检验
-    user = UserSerializerForTweet()
+    # user = UserSerializerForTweet()
+    user = UserSerializerForTweet(source='cached_user')
     comments_count = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
     has_liked = serializers.SerializerMethodField()
@@ -36,7 +37,7 @@ class TweetSerializer(serializers.ModelSerializer):
             'photo_urls',
         )
 
-    def get_likes_count(self, obj):
+    def get_likes_count(self, obj):  # 这里的 obj 是 Tweet 的实例
         return obj.like_set.count()
 
     def get_comments_count(self, obj):

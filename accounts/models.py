@@ -1,6 +1,7 @@
-from django.db import models
+from accounts.listeners import user_changed, profile_changed
 from django.contrib.auth.models import User
-
+from django.db import models
+from django.db.models.signals import post_save, pre_delete
 
 class UserProfile(models.Model):
     # One2One field 会创建一个 unique index，确保不会有多个 UserProfile 指向同一个 User
@@ -26,8 +27,10 @@ class UserProfile(models.Model):
 def get_profile(user):
     if hasattr(user, '_cached_user_profile'):
         return getattr(user, '_cached_user_profile')
-    profile, _ = UserProfile.objects.get_or_create(user=user)
+    # profile, _ = UserProfile.objects.get_or_create(user=user)
     # 使用 user 对象的属性进行缓存(cache)，避免多次调用同一个 user 的 profile 时重复的对数据库进行查询
+    from accounts.services import UserService
+    profile = UserService.get_profile_through_cache(user.id)
     setattr(user, '_cached_user_profile', profile)
     return profile
 
@@ -36,3 +39,10 @@ def get_profile(user):
 # python 的运行机制使这个文件被加载时就运行下面的代码
 # 在 model 的定义中, 尽量不要用继承关系, 因为如果我想要看 user 有哪些属性, 还需要点到父类中去查看, 会使代码不方便阅读
 User.profile = property(get_profile)
+
+# hook up with listeners to invalidate cache
+pre_delete.connect(user_changed, sender=User)
+post_save.connect(user_changed, sender=User)
+
+pre_delete.connect(profile_changed, sender=UserProfile)
+post_save.connect(profile_changed, sender=UserProfile)
