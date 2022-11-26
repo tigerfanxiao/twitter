@@ -103,8 +103,8 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "twitter",
-        "HOST": "192.168.0.24",
-        # "HOST": "100.65.149.82",
+        # "HOST": "192.168.0.24",
+        "HOST": "100.65.148.88",
         "PORT": "3306",
         "USER": "root",
         "PASSWORD": "123456",
@@ -195,6 +195,15 @@ CACHES = {
         'KEY_PREFIX': 'testing',  # 因为本质上是用了同一个 memcached 的库, 在 testing 时,加上前前缀 testing 来区分测试数据
     },
 }
+
+# Redis
+# 安装方法: sudo apt-get install redis
+# 然后安装 redis 的 python 客户端： pip install redis
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = 6379
+REDIS_DB = 0 if TESTING else 1
+REDIS_KEY_EXPIRE_TIME = 7 * 86400  # in seconds
+
 
 try:
     from .local_settings import *

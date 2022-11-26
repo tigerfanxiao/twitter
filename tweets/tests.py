@@ -3,6 +3,8 @@ from testing.testcases import TestCase
 from tweets.constants import TweetPhotoStatus
 from tweets.models import TweetPhoto
 from utils.time_helpers import utc_now
+from utils.redis_client import RedisClient
+from utils.redis_serializers import DjangoModelSerializer
 
 
 class TweetTests(TestCase):
@@ -41,3 +43,16 @@ class TweetTests(TestCase):
         # 以内 tweetphoto指定了 tweet 为外键, 所以可以通过 tweet 来反查.
         # 反查的写法是 tweetphoto模型(表单)的名称小写_set
         self.assertEqual(self.tweet.tweetphoto_set.count(), 1)
+
+
+    def test_cache_tweet_in_redis(self):
+        tweet = self.create_tweet(self.linghu)
+        conn = RedisClient.get_connection()
+        serialized_data = DjangoModelSerializer.serialize(tweet)
+        conn.set(f'tweet:{tweet.id}', serialized_data)
+        data = conn.get(f'tweet:not_exists')
+        self.assertEqual(data, None)
+
+        data = conn.get(f'tweet:{tweet.id}')
+        cached_tweet = DjangoModelSerializer.deserialize(data)
+        self.assertEqual(tweet, cached_tweet)
