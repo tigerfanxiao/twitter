@@ -7,6 +7,7 @@ from likes.models import Like
 from rest_framework.test import APIClient
 from tweets.models import Tweet
 from newsfeeds.models import NewsFeed
+from utils.redis_client import RedisClient
 
 # 很多测试都需要创建用户 create_user, 和 create_tweet, 所以抽象出两个方法
 # 这里覆盖 django 自带的 TestCase是为了减少对已经有的代码进行修改, 是一种常用方法
@@ -15,6 +16,8 @@ from newsfeeds.models import NewsFeed
 class TestCase(DjangoTestCase):
     def clear_cache(self):
         caches['testing'].clear()
+        RedisClient.clear()
+
     # 这里默认初始值都是先设置为 None 后, 再赋值. 这样不会让定义时写得太长
     @property
     def anonymous_client(self):
