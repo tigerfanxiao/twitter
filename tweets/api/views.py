@@ -8,7 +8,7 @@ from tweets.api.serializers import (
     TweetSerializerForCreate,
     TweetSerializerForDetail,
 )
-
+from tweets.services import TweetService
 from utils.decorators import required_params
 from utils.paginations import EndlessPagination
 
@@ -34,9 +34,12 @@ class TweetViewSet(GenericViewSet):
     def list(self, request):
         # 返回指定用户所有的 tweet, 并按照 created_at 倒叙排列
         # 这里需要在 model 中建立联合索引
-        tweets = Tweet.objects.filter(
-            user_id=request.query_params['user_id']
-        ).order_by('-created_at')  # 这里需要建立联合索引, 在 model 中配置
+        # tweets = Tweet.objects.filter(
+        #     user_id=request.query_params['user_id']
+        # ).order_by('-created_at')  # 这里需要建立联合索引, 在 model 中配置
+        # 这里优化了从 cache 中获取 tweet
+        tweets = TweetService.get_cached_tweets(user_id=request.query_params['user_id'])
+
         tweets = self.paginate_queryset(tweets)
         serializer = TweetSerializer(
             tweets,

@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from tweets.models import Tweet
 from utils.memcached_helper import MemcachedHelper
+from django.db.models.signals import post_save
+from newsfeeds.listeners import push_newsfeed_to_cache
 
 class NewsFeed(models.Model):
     # 注意: 这个 user 不是谁发了这个帖子, 而是谁可以看到这个帖子
@@ -23,3 +25,6 @@ class NewsFeed(models.Model):
 
     def __str__(self):
         return f'{self.created_at} inbox of {self.user}: {self.tweet}'
+
+
+post_save.connect(push_newsfeed_to_cache, sender=NewsFeed)
